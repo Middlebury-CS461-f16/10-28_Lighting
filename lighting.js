@@ -1,6 +1,6 @@
 let vertexShader = `
 attribute vec4 a_Position;
-attribute vec4 a_Normal;
+attribute vec3 a_Normal;
 
 
 uniform mat4 u_Model;
@@ -10,7 +10,7 @@ uniform mat4 u_Projection;
 varying vec4 v_Color;
 
 void main(){
-  v_Color = abs(a_Normal);
+  v_Color = vec4(abs(a_Normal), 1.0);
   gl_PointSize = 10.0;
   gl_Position = u_Projection * u_View * u_Model * a_Position;
 }`;
