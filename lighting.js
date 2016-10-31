@@ -22,6 +22,52 @@ void main(){
   gl_FragColor = v_Color;
 }`;
 
+let smoothVertexShader = `
+attribute vec4 a_Position;
+attribute vec3 a_Normal;
+
+
+uniform mat4 u_Model;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
+
+varying vec4 v_Color;
+
+vec3 ambient, diffuse, specular;
+
+vec3 light_position;
+vec3 L, N, V, H, P;
+
+void main(){
+  gl_PointSize = 10.0;
+  gl_Position = u_Projection * u_View * u_Model * a_Position;
+
+  light_position = (u_View*vec4(2.0,2.0,2.0 ,1.0)).xyz;
+
+	vec3 light_ambient = vec3(0.2, 0.2, 0.2);
+	vec3 light_diffuse = vec3(0.8, 0.8, 0.8);
+	vec3 light_specular = vec3(0.9, 0.9, 0.9);
+	float shininess = 60.0;
+
+	vec3 color = vec3(0.0, 1.0, 0.6);
+	P = (u_View*u_Model*a_Position).xyz;
+
+	N = (u_View*u_Model*vec4(a_Normal, 0.0)).xyz;
+	L = normalize(light_position - P);
+	V = normalize( -P);
+	H = normalize(L+V);
+
+
+	ambient = color * light_ambient;
+	diffuse = color * max(dot(L, N), 0.0)* light_diffuse;
+	specular = max(color * pow(max(dot(N, H), 0.0), shininess) * light_specular, 0.0) ;
+
+
+	v_Color = vec4(ambient + diffuse  , 1.0);
+
+}`;
+
+
 
 
 var createCube = function(gl, program){
@@ -265,7 +311,7 @@ window.onload = function(){
   }
 
   // don't catch this error since any problem here is a programmer error
-  let program = middUtils.initializeProgram(gl, vertexShader, fragmentShader);
+  let program = middUtils.initializeProgram(gl, smoothVertexShader, fragmentShader);
 
   // load referneces to the vertex attributes as properties of the program
   program.a_Position = gl.getAttribLocation(program, 'a_Position');
@@ -307,7 +353,7 @@ window.onload = function(){
 
 
   let drawCube = createCube(gl, program);
-  let drawSphere = createSphere(gl, program, 20);
+  let drawSphere = createSphere(gl, program, 35);
 
   gl.enable(gl.DEPTH_TEST);
 
@@ -330,8 +376,8 @@ window.onload = function(){
     // clear the canvas
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawCube();
-    //drawSphere('point');
+    //drawCube();
+    drawSphere('skin');
     requestAnimationFrame(render);
   };
 
